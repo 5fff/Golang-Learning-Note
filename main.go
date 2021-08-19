@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Vertex struct {
 	X int
@@ -14,6 +17,8 @@ func main() {
 	arrays_demo()
 	slices_demo()
 	slice_literals_demo()
+	slice_default_demo()
+	slices_of_slices()
 }
 
 func pointers_demo() {
@@ -118,3 +123,152 @@ func slice_literals_demo() {
 	}
 	fmt.Println(s)
 }
+
+func printSlice(s string, x []int) {
+	fmt.Printf("%s len=%d cap=%d %v\n",
+		s, len(x), cap(x), x)
+}
+
+func slice_default_demo() {
+	/*
+		When slicing, you may omit the high or low bounds to use their defaults instead.
+		The default is zero for the low bound and the length of the slice for the high bound.
+
+		For the array
+
+		var a [10]int
+
+		these slice expressions are equivalent:
+
+		a[0:10]
+		a[:10]
+		a[0:]
+		a[:]
+	*/
+	s := []int{2, 3, 5, 7, 11, 13}
+
+	s = s[1:4]
+	fmt.Println(s)
+
+	s = s[:2]
+	fmt.Println(s)
+
+	s = s[1:]
+	fmt.Println(s)
+
+	s = s[:]
+	fmt.Println(s)
+
+	//create slice with make
+	a := make([]int, 5)
+	printSlice("a", a)
+
+	b := make([]int, 0, 5)
+	printSlice("b", b)
+
+	c := b[:2]
+	printSlice("c", c)
+
+	d := c[2:5]
+	printSlice("d", d)
+}
+
+func slices_of_slices() {
+	// Create a tic-tac-toe board.
+	board := [][]string{
+		[]string{"_", "_", "_"},
+		[]string{"_", "_", "_"},
+		[]string{"_", "_", "_"},
+	}
+
+	// The players take turns.
+	board[0][0] = "X"
+	board[2][2] = "O"
+	board[1][2] = "X"
+	board[1][0] = "O"
+	board[0][2] = "X"
+
+	for i := 0; i < len(board); i++ {
+		fmt.Printf("%s\n", strings.Join(board[i], " "))
+	}
+}
+
+func printSlice2(s []int) {
+	fmt.Printf("len=%d cap=%d %v\n", len(s), cap(s), s)
+}
+
+// https://blog.golang.org/go-slices-usage-and-internals
+func append_slice() {
+	var s []int
+	printSlice2(s)
+
+	// append works on nil slices.
+	s = append(s, 0)
+	printSlice2(s)
+
+	// The slice grows as needed.
+	s = append(s, 1)
+	printSlice2(s)
+
+	// We can add more than one element at a time.
+	s = append(s, 2, 3, 4)
+	printSlice2(s)
+}
+
+func range_demo() {
+	var pow = []int{1, 2, 4, 8, 16, 32, 64, 128}
+	for index, value := range pow {
+		fmt.Printf("2**%d = %d\n", index, value)
+	}
+}
+
+func range_demo2() {
+	pow := make([]int, 10)
+	for i := range pow {
+		pow[i] = 1 << uint(i) // == 2**i
+	}
+	for _, value := range pow {
+		fmt.Printf("%d\n", value)
+	}
+}
+
+/*
+Issues encountered but don't know why:
+func Pic(dx, dy int) [][]uint8 {
+	counter := uint8(0)
+	img := make([][]uint8, dx)
+	for _, s := range img {
+		s = make([]uint8, dy)
+	}
+	for i := 0; i < dx; i++ {
+		for j :=0; j < dy; j++ {
+			counter++
+			img[i][j]=counter
+		}
+	}
+	return img
+}
+
+ERROR s declared but not used
+
+Below works without error
+func Pic(dx, dy int) [][]uint8 {
+	counter := uint8(0)
+	img := make([][]uint8, dx)
+	for i := range img {
+		img[i] = make([]uint8, dy)
+	}
+	for i := 0; i < dx; i++ {
+		for j :=0; j < dy; j++ {
+			counter++
+			img[i][j]=counter
+		}
+	}
+	return img
+}
+
+Found the answer: range copies the values from the slice you're iterating over
+https://golang.org/ref/spec#RangeClause
+
+
+*/
