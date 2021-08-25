@@ -27,6 +27,8 @@ func main() {
 	func_closure_demo()
 	fibonacciDriver()
 	method_demo()
+	method_demo2()
+	method_pointer_receivers()
 }
 
 func pointers_demo() {
@@ -445,3 +447,67 @@ func method_demo() {
 	v := Vertex2{3, 4}
 	fmt.Println(v.Abs()) //it's like a member function
 }
+
+/*
+You can declare a method on non-struct types, too.
+In this example we see a numeric type MyFloat with an Abs method.
+You can only declare a method with a receiver whose type is defined in the same package as the method. You cannot declare a method with a receiver whose type is defined in another package (which includes the built-in types such as int).
+*/
+type MyFloat float64
+
+func (f MyFloat) Abs() float64 {
+	if f < 0 {
+		return float64(-f)
+	}
+	return float64(f)
+}
+
+func method_demo2() {
+	f := MyFloat(-math.Sqrt2)
+	fmt.Println(f.Abs())
+}
+
+type VertexFloat struct {
+	X, Y float64
+}
+
+func (v VertexFloat) Abs() float64 {
+	return math.Sqrt(v.X*v.X + v.Y*v.Y)
+}
+
+func (v *VertexFloat) Scale(f float64) {
+	v.X = v.X * f
+	v.Y = v.Y * f
+}
+
+func method_pointer_receivers() {
+	v := VertexFloat{3, 4}
+	v.Scale(10)
+	fmt.Println(v.Abs())
+}
+
+func ScaleFunc(v *VertexFloat, f float64) {
+	v.X = v.X * f
+	v.Y = v.Y * f
+}
+
+func methods_pointer_indirection() {
+	//methods with pointer receivers take either
+	//a value or a pointer as the receiver when they are called
+	v := VertexFloat{3, 4}
+	v.Scale(2)
+	ScaleFunc(&v, 10)
+
+	p := &VertexFloat{4, 3}
+	p.Scale(3)
+	ScaleFunc(p, 8)
+
+	fmt.Println(v, p)
+}
+
+/*
+Methods and pointer indirection
+Functions that take a value argument must take a value of that specific type
+while methods with value receivers take either a value or a pointer as the
+receiver when they are called
+*/
