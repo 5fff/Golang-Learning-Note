@@ -507,7 +507,181 @@ func methods_pointer_indirection() {
 
 /*
 Methods and pointer indirection
-Functions that take a value argument must take a value of that specific type
-while methods with value receivers take either a value or a pointer as the
-receiver when they are called
+
+Functions that take a value argument must take a value of that specific type:
+
+var v Vertex
+fmt.Println(AbsFunc(v))  // OK
+fmt.Println(AbsFunc(&v)) // Compile error!
+
+while methods with value receivers take either a value or a pointer as the receiver when they are called:
+
+var v Vertex
+fmt.Println(v.Abs()) // OK
+p := &v
+fmt.Println(p.Abs()) // OK
+
+In this case, the method call p.Abs() is interpreted as (*p).Abs().
+*/
+
+/**/
+/**/
+/*
+There are two reasons to use a pointer receiver.
+The first is so that the method can modify the value that its receiver points to.
+The second is to avoid copying the value on each method call. This can be more efficient if the receiver is a large struct, for example.
+In this example, both Scale and Abs are with receiver type *Vertex, even though the Abs method needn't modify its receiver.
+In general, all methods on a given type should have either value or pointer receivers, but not a mixture of both.
+*/
+
+/*
+Interfaces
+An interface type is defined as a set of method signatures.
+A value of interface type can hold any value that implements those methods.
+
+
+Interfaces are implemented implicitly
+A type implements an interface by implementing its methods. There is no explicit declaration of intent, no "implements" keyword.
+Implicit interfaces decouple the definition of an interface from its implementation, which could then appear in any package without prearrangement.
+*/
+
+/*
+import (
+	"fmt"
+	"math"
+)
+
+type Abser interface {
+	Abs() float64
+}
+
+func main() {
+	var a Abser
+	f := MyFloat(-math.Sqrt2)
+	v := Vertex{3, 4}
+
+	a = f  // a MyFloat implements Abser
+	a = &v // a *Vertex implements Abser
+
+	// In the following line, v is a Vertex (not *Vertex)
+	// and does NOT implement Abser.
+	//a = v
+
+	fmt.Println(a.Abs())
+}
+
+type MyFloat float64
+
+func (f MyFloat) Abs() float64 {
+	if f < 0 {
+		return float64(-f)
+	}
+	return float64(f)
+}
+
+type Vertex struct {
+	X, Y float64
+}
+
+func (v *Vertex) Abs() float64 {
+	return math.Sqrt(v.X*v.X + v.Y*v.Y)
+}
+*/
+
+/*
+Rest of the topics to study
+
+Interface values with nil underlying values
+Nil interface values
+The empty interface
+Type assertions
+Stringers
+Errors
+Readers
+
+*/
+
+/*
+Stringers Exercise
+
+package main
+
+import "fmt"
+
+type IPAddr [4]byte
+
+// TODO: Add a "String() string" method to IPAddr.
+func (addr IPAddr) String() string {
+	return fmt.Sprintf("%v.%v.%v.%v", addr[0], addr[1], addr[2], addr[3])
+}
+func main() {
+	hosts := map[string]IPAddr{
+		"loopback":  {127, 0, 0, 1},
+		"googleDNS": {8, 8, 8, 8},
+	}
+	for name, ip := range hosts {
+		fmt.Printf("%v: %v\n", name, ip)
+	}
+}
+*/
+
+/*
+Reader Exercise
+Implement a Reader type that emits an infinite stream of the ASCII character 'A'.
+// TODO: Add a Read([]byte) (int, error) method to MyReader.
+
+package main
+
+import "golang.org/x/tour/reader"
+
+type MyReader struct{}
+
+func (r MyReader) Read(b []byte) (int, error) {
+	i := int(0)
+	for ; i<len(b); i++ {
+		b[i] = 'A'
+	}
+	return i, nil
+}
+
+func main() {
+	reader.Validate(MyReader{})
+}
+*/
+
+/*
+//rot 13 reader exercise
+
+package main
+
+import (
+	"io"
+	"os"
+	"strings"
+)
+
+type rot13Reader struct {
+	r io.Reader
+}
+
+func (r13 rot13Reader) Read(b []byte) (int, error) {
+	n, err := r13.r.Read(b)
+	if err == nil {
+		for i := 0; i < n; i++ {
+			if b[i] >= 'A' && b[i] <= 'Z' {
+				b[i] = 65 + (b[i] - 65 + 13) % 26
+			} else if b[i] >= 'a' && b[i] <= 'z' {
+				b[i] = 97 + (b[i] - 97 + 13) % 26
+			}
+		}
+	}
+	return n, err
+}
+
+func main() {
+	s := strings.NewReader("Lbh penpxrq gur pbqr!")
+	r := rot13Reader{s}
+	io.Copy(os.Stdout, &r)
+}
+
 */
