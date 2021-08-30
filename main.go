@@ -685,3 +685,41 @@ func main() {
 }
 
 */
+
+/*
+//Image exercise
+
+package main
+
+import (
+	"math/rand"
+	"image"
+	"image/color"
+
+	"golang.org/x/tour/pic"
+)
+
+type Image struct{}
+
+func (I Image) Bounds() image.Rectangle {
+	return image.Rect(0, 0, 1000, 1000)
+}
+
+func (I Image) ColorModel() color.Model {
+	return color.RGBAModel
+}
+
+func (I Image) At(x, y int) color.Color {
+	r:= uint8(rand.Int() % 256)
+	g:= r
+	b:= r
+	return color.RGBA{r, g, b, 255}
+}
+
+func main() {
+	m := Image{}
+	pic.ShowImage(m)
+}
+
+
+*/
